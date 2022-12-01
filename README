@@ -1,0 +1,187 @@
+IMPLEMENTATION: Everything has been implemented correctly to our knowledge
+
+SIGNIFICANT DEPARTURES: There is only one main departure from the design we
+outlined. The memory data structure now is a struct with two sequences: 
+one to keep track of the segments and the data they hold (we still use 
+UArray_T for the segments) and the other one to keep track of the free
+segments. The free sequence contains pointers to uint32_ts, which indicate
+all of the segments that are free and unmapped. When the free sequence is 
+empty, this indicates that expansion of the segment sequence is necessary
+in order to map a new segment.
+
+ARCHITECTURE:
+
+Main Modules: registers, memory, and um
+
+REGISTERS - this module is responsible for all the operations associated with 
+the manipulation of the registers as well as allocating/deallocating memory
+of the associated module. The data structure used is a struct containing
+a UArray_T initialized with 8 indices, each containing a uint32_t. This module
+only knows the "secrets" associated with the register module (such as the 
+struct definition of a Register_T) and is used by other modules in order 
+to fully implement the UM program.
+
+MEMORY - this module is responsible for all the operations associated with the
+manipulation of the memory as well as allocating/deallocating memory of the 
+associated module. The data structure used is a struct containing two
+sequences: one holding pointers to UArray_T's, which represent the segments,
+and one holding pointers to uint32_t's, which represent which indices of memory
+are free/available to be mapped. This module only knows the "secrets" 
+associated with the memory module (such as the struct definition of a Memory_T)
+and is used by other modules in order to fully implement the UM program
+
+UM - this module is responsible for all the operations associated with the full
+program. This includes instruction functions, new/free, execute program, and 
+instruction call (which calls appropriate instruction functions). The data 
+structure used is a struct containing a Register_T struct and a Memory_T 
+struct. The "secrets" associated with the UM module are the definitions for the
+UM_T struct as well as the Memory_T struct. The reason for including the 
+Memory_T struct is because in order to execute segment zero, the UArray_T 
+associated with segment zero must be obtained.
+
+um_driver.c - this is the main driver for the UM program and is mainly 
+responsible for reading in the words from the .um file and 
+populating segment zero.
+-------------------------------------------------------------------------------
+Other .c file descriptions
+
+bitpack.c - File given to us; responsible for bitpacking words 
+            with proper instructions
+
+umlab.c - This file contains all of the tests that were written for the testing
+          of our UM program
+
+umlabwrite.c - This program creates all of the .um tests which were outlined
+               in the umlab.c as well as additional .um unit tests we wrote to
+               test our UM
+
+unittest.c - This is our unit test file which contains functions that test each
+             module individually. Within each function, each test is vaguely 
+             outlined in order to explain what is being tested.
+
+TIME FOR 50 MIL INSTRUCTIONS: ≈3.25 minutes because we looked at the um
+assembly of midmark.um and did some dimensional analysis in order to
+figure out how long it would take to do 50 million instructions
+
+UM UNIT TESTS:
+
+add.um - This tests adding two numbers of value whose sum is less than 10, 
+         as well as load value and output. First, it outputs the equation 
+         "5+2=", then it adds 2 to the character value of '5' in order to 
+         get the ascii value of '7' and outputs that character. 
+         Total output: "5+2=7"
+
+add-verbose.um - This is a more comprehensive test of the adding function and 
+                 relies on functions that were previously tested. A register is
+                 loaded with the value (1 << 25) - 1 so it fits in the value 
+                 field of the bitpacked instruction. Then, 1 is added to the 
+                 value in the register to get (1 << 25). Then, it is
+                 added to itself until it becomes (1 << 32). This means
+                 that the register should contain the value of 0 since the
+                 number is always % 2 ^ 32. Then, the value of two tildas are
+                 outputted and inbetween those is the ascii value of 0
+
+arithmetic.um -  This is a very intense test that tests almost every 
+                 instruction and outputs "ABC's". In order to get 'A', normal
+                 addition, division, and mulitplication is done to obtain the 
+                 character. In order to get 'B', the nand function
+                 and the add function are used to get the correct
+                 character value, which ultimately checks that the number is
+                 correctly modded by 2 ^ 32.
+                 In order to get 'C', the mulitplication function is 
+                 used to check that the number is % 2 ^ 32 and conditional move
+                 is used to ensure that the number cycles back to 0. In order
+                 to get an apostrophe, it uses map/unmap segment, segmented
+                 store/load, as well as the previous arithmetic functions
+                 in order to get the correct ascii value. In order to get the
+                 's', this just used the basic arithmetic operations to ensure
+                 that all of the arithmetic functions work properly.
+                 Total Output: "ABC's"
+
+conditional.um - This tests conditional move as well as the initial state of
+                 the um because it checks whether or not the registers are
+                 properly initialized with the value of zero. First, we load
+                 the values of v and 6 into registers. Then, we check an 
+                 "uninitialized register" to see whether it has the value of
+                 zero. Since it should be 0, the condition is not met, so
+                 the value in rb should not be moved to ra.
+                 After that, we load a value that is not 0 into register
+                 and perform a conditional move, so the value in rb should be
+                 moved to ra.
+                 Total Output: "v\n6"
+
+divide.um - This tests that the divide instruction works properly, especially
+            if the division results in a decimal number, the number must always
+            round down. It should output the character ':'
+
+halt.um - This tests that the halt instruction successfully stops the program
+          entirely. This could be used in conjunction with valgrind to
+          check for memory leaks and checking the return value of the function
+          to check that it returned EXIT_SUCCESS
+
+halt-verbose.um - This test also tests the halt instruction to ensure that no
+                  code is run after the halt instruction is executed. This
+                  can also be tested using the same tests as above
+
+input.um - This tests the input instruction, specifically the condition that if
+        end of input has been signaled, then $r[C] is loaded with 32-bit word
+        in which every bit is 1.
+        Note: It relies on functions that were previously tested.
+        It reads in an input file in which the sixth input (r5) should be EOF,
+        so the value in r5 should be every bit is 1 (~0).
+        r5 is added to a register containing the value of 1, and the sum is
+        placed into r6, so r6 should have a value of 0 becuase
+        2 ^ 32 - 1 (which is ~0) + 1 % (2 ^ 32) = 0.
+        A conditional move is executed, but since r6 should be 0, r7 should not
+        get the value in r5.
+        The value in r7 (which should not be ~0) is outputted.
+        This might cause a machine to fail if one of the instructions tested
+        was not implemented properly.
+        Then 1 is added to r6 = 0, so now r6 != 0.
+        A conditional move is executed, so the value of r7 should have value in
+        r2. r7 is then outputted.
+
+segments.um - This tests the map/unmap segment instructions
+              and the segmented load/store insructions.
+              It relies on functions that were previously tested.
+              It loads vals into registers, outputs a few of them,
+              then maps a segment, stores a value in segment, loads that value
+              into a register, outputs the value, then unmaps the segment.
+              These operations are a basic test for the
+              instructions that are executed.
+
+load-program.um - This tests the load program instruction and functionality by
+                  encoding numerous words physically and testing whether or
+                  not those instructions are actually run.
+                  It should output the character '6'
+
+multiply.um - This is a basic multiply test.
+              It relies on functions that were previously tested.
+              The test loads the ints 4, 5, 3 into registers. It multiplies
+              4 * 5 and stores the value in a register.
+              Then it multiplies that value (which is 20) by 3
+              and outputs the result, which is 60.
+              Total output: '<' (which is the ASCII value of 60)
+
+print-six.um - This test was written during lab. It tests the load value,
+               output, and add instructions.
+               It loads values 48 (ASCII code for '0') and 6 into registers,
+               adds them, and puts the resulting value into a register,
+               then outputs that register.
+               Total output: '6'
+
+seg-load-store.um - This tests segmented load and store by loading values into
+                    memory, retrieving the values, doing basic arithmetic that
+                    was tested in previous UM tests, and outputs the values
+                    that were stored in memory.
+
+load_and_output.um - This is a basic test for output and load value.
+                     It first outputs "uninitialized" registers, which should
+                     all contain the value 0. Then it loads values into all of
+                     the registers and outputs those values.
+
+nand.um - This tests the nand instruction.
+          It does arithmetic to load the value (1 << 32) - 127 into r4 and r5
+          and performs the nand operation on registers.
+          The resulting value is stored in r7 and outputted.
+          Total output: "~\n" (ASCII code for ~ is 126)

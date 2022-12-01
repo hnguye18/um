@@ -1,0 +1,15 @@
+halt.um
+halt-verbose.um
+add.um
+print-six.um
+multiply.um
+divide.um
+conditional.um
+seg-load-store.um
+load-program.um
+load_and_output.um
+input.um
+add-verbose.um
+segments.um
+nand.um
+arithmetic.um
