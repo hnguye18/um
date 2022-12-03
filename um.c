@@ -10,7 +10,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <inttypes.h>
 #include "um.h"
 #include "uarray.h"
 #include "seq.h"
@@ -101,21 +101,40 @@ void um_execute(UM_T um)
     /* Execute words in segment zero until there are none left */
     while (prog_counter < seg_zero_len) {
         word = *(uint32_t *)UArray_at(seg_zero, prog_counter);
-        opcode = Bitpack_getu(word, OP_WIDTH, WORD_SIZE - OP_WIDTH);
+        //opcode = Bitpack_getu(word, OP_WIDTH, WORD_SIZE - OP_WIDTH);
+        // op width = 4, second param = 28
+        /* get the opcode */
+        uint64_t opcode_shift = ((uint64_t)word << 32) >> 60;
+        opcode = opcode_shift;
+
         prog_counter++;
 
+        uint64_t ra_shift = 0;
         /* Load value */
         if (opcode == 13) {
-            uint32_t value_size = WORD_SIZE - OP_WIDTH - R_WIDTH;
-            ra = Bitpack_getu(word, R_WIDTH, value_size);
-            uint32_t value = Bitpack_getu(word, value_size, 0);
+            //uint32_t value_size = WORD_SIZE - OP_WIDTH - R_WIDTH;
+            //ra = Bitpack_getu(word, R_WIDTH, value_size);
+            ra_shift = ((uint64_t)word << 36) >> 61;
+            // printf("%" PRIu64 "\n", ra_shift);
+            ra = (uint32_t)ra_shift;
+            //printf("%" PRIu32 "\n", ra);
+
+            //uint32_t value = Bitpack_getu(word, value_size, 0);
+            uint64_t value_shift = ((uint64_t)word << 39) >> 39;
+            uint32_t value = value_shift;
             load_value(um, ra, value);
             continue;
         } 
 
-        ra = Bitpack_getu(word, R_WIDTH, RA_LSB);
-        rb = Bitpack_getu(word, R_WIDTH, RB_LSB);
-        rc = Bitpack_getu(word, R_WIDTH, RC_LSB);
+        //ra = Bitpack_getu(word, R_WIDTH, RA_LSB);
+        ra_shift = ((uint64_t)word << 55) >> 61;
+        ra = ra_shift;
+        //rb = Bitpack_getu(word, R_WIDTH, RB_LSB);
+        uint64_t rb_shift = ((uint64_t)word << 58) >> 61;
+        rb = rb_shift;
+        //rc = Bitpack_getu(word, R_WIDTH, RC_LSB);
+        uint64_t rc_shift = ((uint64_t)word << 61) >> 61;
+        rc = rc_shift;
 
         /* Load Program */
         if (opcode == 12) {
