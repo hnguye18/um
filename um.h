@@ -4,8 +4,6 @@
  */
 
 #include <stdint.h>
-#include "registers.h"
-#include "memory.h"
 #include "seq.h"
 
 #ifndef UM_H_
@@ -19,6 +17,12 @@ typedef enum Um_opcode {
     CMOV = 0, SLOAD, SSTORE, ADD, MUL, DIV,
     NAND, HALT, MAP, UNMAP, OUT, IN, LOADP, LV
 } Um_opcode;
+
+/* Pointer to a struct that contains the data structure for this module */
+typedef struct Registers_T *Registers_T;
+
+/* Pointer to a struct that contains the data structure for this module */
+typedef struct Memory_T *Memory_T;
 
 /* Struct definition of a Memory_T which 
    contains two sequences: 
@@ -38,6 +42,14 @@ struct UM_T {
     Memory_T mem;
 };
 
+/* Creates/frees memory associated with a Registers_T */
+Registers_T registers_new();
+void registers_free(Registers_T *r);
+
+/* Allows user to interact with Registers_T data */
+void registers_put(Registers_T r, uint32_t num_register, uint32_t value);
+uint32_t registers_get(Registers_T r, uint32_t num_register);
+
 /* Creates/frees memory associated with a UM_T */
 UM_T um_new(uint32_t length);
 void um_free(UM_T *um);
@@ -47,6 +59,21 @@ void um_execute(UM_T um);
 void instruction_call(UM_T um, Um_opcode op, uint32_t ra, 
               uint32_t rb, uint32_t rc);
 //void populate(UM_T um, uint32_t index, uint32_t word);
+
+/* Creates/frees memory associated with a Memory_T */
+Memory_T memory_new(uint32_t length);
+void memory_free(Memory_T *m);
+
+/* Allows user to interact with Memory_T data */
+void memory_put(Memory_T m, uint32_t seg, uint32_t off, uint32_t val);
+uint32_t memory_get(Memory_T m, uint32_t seg, uint32_t off);
+
+/* Maps and Unmaps segments to Memory_T sequence */
+uint32_t memory_map(Memory_T m, uint32_t length);
+void     memory_unmap(Memory_T m, uint32_t seg_num);
+
+uint32_t  load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
+
 
 /* Instructions */
 
@@ -315,7 +342,10 @@ static inline void load_value(UM_T um, uint32_t ra, uint32_t val)
 // void      unmap_segment(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
 // void      output(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
 // void      input(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
-uint32_t  load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
 // void      load_value(UM_T um, uint32_t ra, uint32_t val);
+
+
+
+
 
 #endif

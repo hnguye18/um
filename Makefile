@@ -20,7 +20,7 @@ writetests: umlabwrite.o umlab.o bitpack.o
 UT: registers.o memory.o um.o bitpack.o unittest.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
-um: registers.o memory.o um.o bitpack.o um_driver.o
+um: um.o
 	$(CC) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 # To get *any* .o file, compile its .c file with the following rule.
