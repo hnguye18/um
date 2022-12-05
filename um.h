@@ -9,6 +9,8 @@
 #ifndef UM_H_
 #define UM_H_
 
+#define HINT 10
+
 /* Pointer to a struct that contains the data structure for this module */
 typedef struct UM_T *UM_T;
 
@@ -29,8 +31,10 @@ typedef struct Memory_T *Memory_T;
    - one holding pointers to UArray_T's representing segments
    - one holding pointers to uint32_t's representing free segments */
 struct Memory_T {
-        Seq_T segments;
-        Seq_T free;
+        uint32_t *free;
+        uint32_t *segments;
+        //Seq_T free;
+        //Seq_T segments;
 };
 
 /* Struct definition of a UM_T which 
@@ -53,6 +57,15 @@ uint32_t registers_get(Registers_T r, uint32_t num_register);
 /* Creates/frees memory associated with a UM_T */
 UM_T um_new(uint32_t length);
 void um_free(UM_T *um);
+
+// CARRAY
+uint32_t arr_size(uint32_t arr[]);
+void arr_addhi(uint32_t *arr[], uint32_t element);
+void arr_addlo(uint32_t *arr[], uint32_t element);
+void arr_remhi(uint32_t *arr[]);
+void arr_remlo(uint32_t *arr[]);
+void arr_resize(uint32_t *arr[]);
+
 
 /* Executes passed in program */
 void um_execute(UM_T um);
