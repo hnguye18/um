@@ -89,7 +89,7 @@ uint32_t  load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc);
  */
 static inline void populate(UM_T um, uint32_t index, uint32_t word)
 {
-    assert(um != NULL);
+    //assert(um != NULL);
     memory_put(um->mem, 0, index, word);
 }
 
@@ -103,8 +103,8 @@ static inline void populate(UM_T um, uint32_t index, uint32_t word)
  */
 static inline void conditional_move(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     if (registers_get(um->reg, rc) != 0) {
         registers_put(um->reg, ra, registers_get(um->reg, rb));
@@ -120,8 +120,8 @@ static inline void conditional_move(UM_T um, uint32_t ra, uint32_t rb, uint32_t 
  */
 static inline void segmented_load(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rb_val = registers_get(um->reg, rb);
     uint32_t rc_val = registers_get(um->reg, rc);
@@ -138,8 +138,8 @@ static inline void segmented_load(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc
  */
 static inline void segmented_store(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t ra_val = registers_get(um->reg, ra);
     uint32_t rb_val = registers_get(um->reg, rb);
@@ -156,8 +156,8 @@ static inline void segmented_store(UM_T um, uint32_t ra, uint32_t rb, uint32_t r
  */
 static inline void add(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rb_val = registers_get(um->reg, rb);
     uint32_t rc_val = registers_get(um->reg, rc);
@@ -174,8 +174,8 @@ static inline void add(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void multiply(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rb_val = registers_get(um->reg, rb);
     uint32_t rc_val = registers_get(um->reg, rc);
@@ -192,12 +192,12 @@ static inline void multiply(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void divide(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rb_val = registers_get(um->reg, rb);
     uint32_t rc_val = registers_get(um->reg, rc);
-    assert(rc_val != 0);
+    // assert(rc_val != 0);
 
     registers_put(um->reg, ra, (rb_val / rc_val));
 }
@@ -212,8 +212,8 @@ static inline void divide(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void nand(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rb_val = registers_get(um->reg, rb);
     uint32_t rc_val = registers_get(um->reg, rc);
@@ -230,7 +230,8 @@ static inline void nand(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void halt(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
+
+    //assert(um != NULL);
     assert(ra < 8 && rb < 8 && rc < 8);
     
     um_free(&um);
@@ -247,8 +248,9 @@ static inline void halt(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void map_segment(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
-    assert(ra < 8 && rb < 8 && rc < 8);
+    (void) ra;
+    //assert(um != NULL);
+    //assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rc_val = registers_get(um->reg, rc);
 
@@ -265,7 +267,7 @@ static inline void map_segment(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void unmap_segment(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
+    //assert(um != NULL);
     assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rc_val = registers_get(um->reg, rc);
@@ -283,11 +285,11 @@ static inline void unmap_segment(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void output(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
+    //assert(um != NULL);
     assert(ra < 8 && rb < 8 && rc < 8);
 
     uint32_t rc_val = registers_get(um->reg, rc);
-    assert(rc_val < 256);
+    //assert(rc_val < 256);
 
     putchar(rc_val);
 }
@@ -304,7 +306,7 @@ static inline void output(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void input(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc) 
 {
-    assert(um != NULL);
+    //assert(um != NULL);
     assert(ra < 8 && rb < 8 && rc < 8);
 
     int character = fgetc(stdin);
@@ -325,8 +327,8 @@ static inline void input(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
  */
 static inline void load_value(UM_T um, uint32_t ra, uint32_t val)
 {
-    assert(um != NULL);
-    assert(ra < 8);
+    //assert(um != NULL);
+    //assert(ra < 8);
 
     registers_put(um->reg, ra, val);
 }

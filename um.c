@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
     uint32_t size = file_info.st_size / CHAR_PER_WORD;
 
     UM_T um = um_new(size);
-    assert(um != NULL);
+    //assert(um != NULL);
 
     populate_seg_zero(um, fp, size);
 
@@ -86,7 +86,7 @@ UM_T um_new(uint32_t length)
  */
 void um_free(UM_T *um)
 {
-    assert((*um) != NULL);
+    //assert((*um) != NULL);
 
     registers_free(&(*um)->reg);
     memory_free(&(*um)->mem);
@@ -105,7 +105,7 @@ void um_free(UM_T *um)
  */
 void um_execute(UM_T um)
 {
-    assert(um != NULL);
+    //assert(um != NULL);
 
     UArray_T seg_zero = (UArray_T)Seq_get(um->mem->segments, 0);
     assert(seg_zero != NULL);
@@ -181,9 +181,8 @@ void um_execute(UM_T um)
 void instruction_call(UM_T um, Um_opcode op, uint32_t ra, 
                       uint32_t rb, uint32_t rc)
 {
-    assert(op >= 0 && op < 14);
     assert(ra < NUM_REGISTERS && rb < NUM_REGISTERS && rc < NUM_REGISTERS);
-    assert(um != NULL);
+    //assert(um != NULL);
 
     switch (op) {
         case CMOV: conditional_move(um, ra, rb, rc);  break;
@@ -212,7 +211,7 @@ void instruction_call(UM_T um, Um_opcode op, uint32_t ra,
  */
 uint32_t load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 {
-    assert(um != NULL);
+    //assert(um != NULL);
     assert(ra < NUM_REGISTERS && rb < NUM_REGISTERS && rc < NUM_REGISTERS);
 
     uint32_t rb_val = registers_get(um->reg, rb);
@@ -229,7 +228,7 @@ uint32_t load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
     /* Creating a copy with the same specifications */
     int seg_len = UArray_length(to_copy);
     UArray_T copy = UArray_new(seg_len, UArray_size(to_copy));
-    assert(copy != NULL);
+    //assert(copy != NULL);
 
     /* Deep copying */
     for (int i = 0; i < seg_len; i++){
@@ -257,25 +256,25 @@ uint32_t load_program(UM_T um, uint32_t ra, uint32_t rb, uint32_t rc)
 Memory_T memory_new(uint32_t length)
 {
         Memory_T m_new = malloc(sizeof(*m_new));
-        assert(m_new != NULL);
 
         /* Creating the segments */
         m_new->segments = Seq_new(HINT);
-        assert(m_new->segments != NULL);
+        //Seq_T segments_temp = Seq_new(HINT);
 
         /* Creating the sequence to keep track of free segments */
         m_new->free = Seq_new(HINT);
-        assert(m_new->free != NULL);
+        //Seq_T free_temp = Seq_new(HINT);
 
         /* Sets all segments to NULL and populates free segment sequence */
         for (int seg_num = 0; seg_num < HINT; ++seg_num) {
                 Seq_addlo(m_new->segments, NULL);
+                //Seq_addlo(segments_temp, NULL);
 
                 uint32_t *temp = malloc(sizeof(uint32_t));
-                assert(temp != NULL);
 
                 *temp = seg_num;
                 Seq_addhi(m_new->free, temp);
+                //Seq_addhi(free_temp, temp);
         }
 
         /* Creating segment zero with proper length*/
@@ -292,7 +291,7 @@ Memory_T memory_new(uint32_t length)
  */
 void memory_free(Memory_T *m)
 {
-        assert(*m != NULL);
+        //assert(*m != NULL);
 
         /* Freeing the UArray_T segments */
         int seg_len = Seq_length((*m)->segments);
@@ -330,12 +329,12 @@ void memory_free(Memory_T *m)
  */
 void memory_put(Memory_T m, uint32_t seg, uint32_t off, uint32_t val)
 {
-        assert(m != NULL);
-        assert(seg < (uint32_t)Seq_length(m->segments));
+        //assert(m != NULL);
+        // assert(seg < (uint32_t)Seq_length(m->segments));
 
         UArray_T queried_segment = (UArray_T)Seq_get(m->segments, seg);
         assert(queried_segment != NULL);
-        assert(off < (uint32_t)UArray_length(queried_segment));
+        // assert(off < (uint32_t)UArray_length(queried_segment));
 
         *(uint32_t *)UArray_at(queried_segment, off) = val;
 }
@@ -350,7 +349,7 @@ void memory_put(Memory_T m, uint32_t seg, uint32_t off, uint32_t val)
  */
 uint32_t memory_get(Memory_T m, uint32_t seg, uint32_t off)
 {
-        assert(m != NULL);
+        //assert(m != NULL);
         assert(seg < (uint32_t)Seq_length(m->segments));
         
         UArray_T queried_segment = (UArray_T)Seq_get(m->segments, seg);
@@ -371,10 +370,9 @@ uint32_t memory_get(Memory_T m, uint32_t seg, uint32_t off)
  */
 uint32_t memory_map(Memory_T m, uint32_t length)
 {
-        assert(m != NULL);
+        //assert(m != NULL);
 
         UArray_T seg = UArray_new(length, sizeof(uint32_t));
-        assert(seg != NULL);
 
         /* Setting values in new segment to 0 */
         for (uint32_t arr_index = 0; arr_index < length; ++arr_index) {
@@ -411,7 +409,7 @@ uint32_t memory_map(Memory_T m, uint32_t length)
  */
 void memory_unmap(Memory_T m, uint32_t seg_num)
 {
-        assert(m != NULL);
+        //assert(m != NULL);
         assert(seg_num != 0);
 
         UArray_T unmap = Seq_get(m->segments, seg_num);
@@ -420,7 +418,6 @@ void memory_unmap(Memory_T m, uint32_t seg_num)
         UArray_free(&unmap);
 
         uint32_t *free_seg = malloc(sizeof(uint32_t));
-        assert(free_seg != NULL);
 
         *free_seg = seg_num;
         Seq_addhi(m->free, free_seg);
@@ -445,10 +442,9 @@ struct Registers_T {
 Registers_T registers_new()
 {
         Registers_T r_new = malloc(sizeof(*r_new));
-        assert(r_new != NULL);
 
         r_new->registers = UArray_new(REGISTER_LEN, sizeof(uint32_t));
-        assert(r_new->registers != NULL);
+        //assert(r_new->registers != NULL);
 
         /* Sets register's values to 0 */
         for (int index = 0; index < REGISTER_LEN; ++index) {
@@ -466,7 +462,7 @@ Registers_T registers_new()
  */
 void registers_free(Registers_T *r)
 {
-        assert(*r != NULL);
+        //assert(*r != NULL);
 
         UArray_free(&(*r)->registers);
         free(*r);
@@ -482,7 +478,6 @@ void registers_free(Registers_T *r)
  */
 void registers_put(Registers_T r, uint32_t num_register, uint32_t value)
 {
-        assert(r != NULL);
         assert(num_register < REGISTER_LEN);
 
         *(uint32_t *)UArray_at(r->registers, num_register) = value;
@@ -498,7 +493,6 @@ void registers_put(Registers_T r, uint32_t num_register, uint32_t value)
  */
 uint32_t registers_get(Registers_T r, uint32_t num_register)
 {
-        assert(r != NULL);
         assert(num_register < REGISTER_LEN);
 
         return *(uint32_t *)UArray_at(r->registers, num_register);
@@ -515,7 +509,6 @@ uint32_t registers_get(Registers_T r, uint32_t num_register)
  */
 void populate_seg_zero(UM_T um, FILE *fp, uint32_t size)
 {
-    assert(um != NULL);
     assert(fp != NULL);
 
     for (uint32_t index = 0; index < size; ++index) {
