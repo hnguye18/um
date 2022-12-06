@@ -258,24 +258,26 @@ Memory_T memory_new(uint32_t length)
         Memory_T m_new = malloc(sizeof(*m_new));
 
         /* Creating the segments */
-        m_new->segments = Seq_new(HINT);
-        //Seq_T segments_temp = Seq_new(HINT);
+        //m_new->segments = Seq_new(HINT);
+        Seq_T segments_temp = Seq_new(HINT);
 
         /* Creating the sequence to keep track of free segments */
-        m_new->free = Seq_new(HINT);
-        //Seq_T free_temp = Seq_new(HINT);
+        //m_new->free = Seq_new(HINT);
+        Seq_T free_temp = Seq_new(HINT);
 
         /* Sets all segments to NULL and populates free segment sequence */
         for (int seg_num = 0; seg_num < HINT; ++seg_num) {
-                Seq_addlo(m_new->segments, NULL);
-                //Seq_addlo(segments_temp, NULL);
+                //Seq_addlo(m_new->segments, NULL);
+                Seq_addlo(segments_temp, NULL);
 
                 uint32_t *temp = malloc(sizeof(uint32_t));
 
                 *temp = seg_num;
-                Seq_addhi(m_new->free, temp);
-                //Seq_addhi(free_temp, temp);
+                //Seq_addhi(m_new->free, temp);
+                Seq_addhi(free_temp, temp);
         }
+        m_new->segments = segments_temp;
+        m_new->free = free_temp;
 
         /* Creating segment zero with proper length*/
         memory_map(m_new, length);
@@ -294,9 +296,12 @@ void memory_free(Memory_T *m)
         //assert(*m != NULL);
 
         /* Freeing the UArray_T segments */
-        int seg_len = Seq_length((*m)->segments);
+        Seq_T segments_temp = (*m)->segments;
+        //int seg_len = Seq_length((*m)->segments);
+        int seg_len = Seq_length(segments_temp);
         for (int seg_num = 0; seg_num < seg_len; ++seg_num) {
-                UArray_T aux = (UArray_T)Seq_remhi((*m)->segments);
+                //UArray_T aux = (UArray_T)Seq_remhi((*m)->segments);
+                UArray_T aux = (UArray_T)Seq_remhi(segments_temp);
                 
                 /* If the segment is unmapped, there is nothing to free */
                 if (aux == NULL) {
@@ -305,13 +310,18 @@ void memory_free(Memory_T *m)
                         UArray_free(&aux);
                 }
         }
+        (*m)->segments = segments_temp;
 
         /* Freeing the uint32_t pointers */
-        int free_len = Seq_length((*m)->free);
+        Seq_T free_temp = (*m)->free;
+        //int free_len = Seq_length((*m)->free);
+        int free_len = Seq_length(free_temp);
         for (int seg_num = 0; seg_num < free_len; ++seg_num) {
-            uint32_t *integer = (uint32_t *)Seq_remhi((*m)->free);
+            //uint32_t *integer = (uint32_t *)Seq_remhi((*m)->free);
+            uint32_t *integer = (uint32_t *)Seq_remhi(free_temp);
             free(integer);
         }
+        (*m)->free = free_temp;
 
         /* Freeing everything else */
         Seq_free(&(*m)->segments);
@@ -380,19 +390,23 @@ uint32_t memory_map(Memory_T m, uint32_t length)
         }
 
         /* Mapping a segment */
-        uint32_t index = Seq_length(m->segments);
-        if (Seq_length(m->free) == 0) {
+        Seq_T segments_temp = m->segments;
+        Seq_T free_temp = m->free;
+        uint32_t index = Seq_length(segments_temp);
+        if (Seq_length(free_temp) == 0) {
             /* If there are no free segments, 
                put UArray_T at end of sequence */
-            Seq_addhi(m->segments, seg);
+            Seq_addhi(segments_temp, seg);
         } else {
             /* If there is a free segment, 
                get the index and put the UArray_T at that index */
-            uint32_t *free_seg_num = (uint32_t *)Seq_remlo(m->free);
+            uint32_t *free_seg_num = (uint32_t *)Seq_remlo(free_temp);
             index = *free_seg_num;
             free(free_seg_num);
-            Seq_put(m->segments, index, seg);
+            Seq_put(segments_temp, index, seg);
         }
+        m->segments = segments_temp;
+        m->free = free_temp;
 
         return index;
 }
@@ -447,9 +461,11 @@ Registers_T registers_new()
         //assert(r_new->registers != NULL);
 
         /* Sets register's values to 0 */
+        UArray_T registers_temp = r_new->registers;
         for (int index = 0; index < REGISTER_LEN; ++index) {
-                *(uint32_t *)UArray_at(r_new->registers, index) = 0;
+                *(uint32_t *)UArray_at(registers_temp, index) = 0;
         }
+        r_new->registers = registers_temp;
 
         return r_new;
 }
