@@ -8,11 +8,25 @@ Nicholas Woodward, nwoodw03
 
 Help received: Piazza
 
-The routine that takes up the most amount of time seems to be the
-bitpacking aspect when retrieving the opcode and the values to store
-in the registers. The assembly code that is utilized to retrieving these
-values could definitely be improved.
+Analysis of assembly:
+Aside from the use of Hanson's data structures, the routine that
+takes the most time in our final UM is the instruction_call routine.
+The disassembly reveals that the compiler builds a jump table based
+on the switch statement by moving values into registers and then jumping
+if the criteria is met.
+Since we removed unneeded assertions from the called opcode functions,
+and are using a jump table and not a sequence of if-else statements,
+we argue that this routine is optimized, and takes the most time to
+run because it is the most central function used during runtime to
+execute instructions.
+
+As for the Hanson structure slowdown, we know that the several layers
+of abstraction combined with the frequency that UArray_at() must be called
+is responsible for the slowdown. In addition to this, the assembly shows
+that the UArray_at() function makes use of IO (stdin), which is also slow.
+This could be optimized by replacing UArray and its clients with low
+level C arrays.
 
 Time spent analyzing the assignment: 2 hours
 Time spent preparing design: 3 hours
-Time spent implementing design: 15 hours
+Time spent implementing design: 22 hours
